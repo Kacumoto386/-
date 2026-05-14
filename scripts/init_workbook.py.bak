@@ -1,0 +1,401 @@
+import os
+import sys
+from datetime import datetime, date, timedelta
+
+# 纭繚椤圭洰鏍圭洰褰曞湪Path涓?
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from config import (
+    SHEETS, HEADERS, DATA_DIR, EXCEL_PATH, DATA_START_ROW,
+    MEMBER_LEVELS, GENDERS, MEMBER_STATUSES, MEMBER_EXTRA_COLS,
+    STAFF_POSITIONS,
+    COURSE_TYPES, COURSE_STATUSES,
+    PAYMENT_METHODS,
+    CLASS_STATUSESES,
+    RECHARGE_TYPES,
+    BOOKING_STATUSES, BOOKING_TIME_SLOTS,
+    PACKAGE_STATUSES,
+    OP_TYPES, OP_MODULES,
+)
+from core.excel_engine import ExcelEngine
+
+
+class WorkbookInitializer:
+        """           """
+        """      """
+        """      """
+        """      """
+        """   &      """
+        """    """
+        """        """
+        ws = self.engine.get_sheet(SHEETS["recharge"])
+        self._write_title(ws, "浼氬憳鍏呭€艰褰曠鐞?)
+        self._write_headers(ws, "recharge")
+        self._add_dropdowns(ws, "recharge", {
+            8: PAYMENT_METHODS,     # 浠樻鏂瑰紡
+            9: RECHARGE_TYPES,      # 鍏呭€肩被鍨?
+        })
+        self.engine.apply_header_style(SHEETS["recharge"], DATA_START_ROW - 1,
+                                       len(HEADERS["recharge"]))
+        self._set_col_widths(ws, "recharge",
+                             {1: 18, 2: 12, 3: 16, 4: 10,
+                              5: 12, 6: 12, 7: 12, 8: 12,
+                              9: 12, 10: 12, 11: 10, 12: 20})
+
+    def _init_stat_sale(self):
+        """鍞缁熻"""
+        ws = self.engine.get_sheet(SHEETS["stat_sale"])
+        self._write_title(ws, "馃搳 鍞缁熻鎶ヨ〃")
+
+        # 鎸夎绋嬬粺璁?
+        ws.cell(row=2, column=1, value="涓€銆佹寜璇剧▼缁熻")
+        ws.cell(row=2, column=1).font = self._subtitle_font()
+        stat_sale_headers = [
+            "璇剧▼缂栧彿", "璇剧▼鍚嶇О", "鏈湀鍞绗旀暟", "鏈湀鍞閲戦",
+            "鏈湀鍞璇炬椂", "绱鍞绗旀暟", "绱鍞閲戦", "绱鍞璇炬椂",
+        ]
+        for i, h in enumerate(stat_sale_headers, 1):
+            ws.cell(row=3, column=i, value=h)
+        self.engine.apply_header_style(SHEETS["stat_sale"], 3, len(stat_sale_headers))
+
+        # 鎸夐攢鍞憳宸ョ粺璁?
+        staff_row = 13
+        ws.cell(row=staff_row, column=1, value="浜屻€佹寜閿€鍞憳宸ョ粺璁?)
+        ws.cell(row=staff_row, column=1).font = self._subtitle_font()
+        staff_headers = [
+            "鍛樺伐缂栧彿", "濮撳悕", "鏈湀鍞绗旀暟", "鏈湀鍞閲戦",
+            "鏈湀鎻愭垚", "绱鍞绗旀暟", "绱鍞閲戦", "绱鎻愭垚",
+        ]
+        for i, h in enumerate(staff_headers, 1):
+            ws.cell(row=staff_row + 1, column=i, value=h)
+        self.engine.apply_header_style(SHEETS["stat_sale"], staff_row + 1, len(staff_headers))
+
+        # 鎸夋湀浠界粺璁?
+        month_row = 23
+        ws.cell(row=month_row, column=1, value="涓夈€佹寜鏈堜唤缁熻")
+        ws.cell(row=month_row, column=1).font = self._subtitle_font()
+        month_headers = [
+            "鏈堜唤", "鍞閲戦", "鍞璇炬椂", "鏂板浼氬憳", "缁垂浼氬憳鏁?, "缁垂鐜?,
+        ]
+        for i, h in enumerate(month_headers, 1):
+            ws.cell(row=month_row + 1, column=i, value=h)
+        self.engine.apply_header_style(SHEETS["stat_sale"], month_row + 1, len(month_headers))
+
+        self._set_col_widths(ws, "stat_sale",
+                             {1: 14, 2: 20, 3: 14, 4: 14,
+                              5: 14, 6: 14, 7: 14, 8: 14})
+
+    def _init_stat_class(self):
+        """涓婅缁熻"""
+        ws = self.engine.get_sheet(SHEETS["stat_class"])
+        self._write_title(ws, "馃搳 涓婅缁熻鎶ヨ〃")
+
+        # 鎸夎绋嬬粺璁?
+        ws.cell(row=2, column=1, value="涓€銆佹寜璇剧▼缁熻")
+        ws.cell(row=2, column=1).font = self._subtitle_font()
+        headers1 = [
+            "璇剧▼缂栧彿", "璇剧▼鍚嶇О", "杩愬姩椤圭洰", "鏈湀涓婅鑺傛暟",
+            "鏈湀娑堣€楄鏃?, "鏈湀涓婅浜烘", "鏈湀璇勪环鍧囧垎",
+            "绱涓婅鑺傛暟", "绱娑堣€楄鏃?,
+        ]
+        for i, h in enumerate(headers1, 1):
+            ws.cell(row=3, column=i, value=h)
+        self.engine.apply_header_style(SHEETS["stat_class"], 3, len(headers1))
+
+        # 鎸夋暀缁冪粺璁?
+        coach_row = 13
+        ws.cell(row=coach_row, column=1, value="浜屻€佹寜鏁欑粌缁熻")
+        ws.cell(row=coach_row, column=1).font = self._subtitle_font()
+        headers2 = [
+            "鏁欑粌缂栧彿", "濮撳悕", "鏈湀涓婅鑺傛暟", "鏈湀鎻愭垚",
+            "鏈湀鏈嶅姟浼氬憳鏁?, "鏈湀璇勪环鍧囧垎", "绱涓婅鑺傛暟", "绱鎻愭垚",
+        ]
+        for i, h in enumerate(headers2, 1):
+            ws.cell(row=coach_row + 1, column=i, value=h)
+        self.engine.apply_header_style(SHEETS["stat_class"], coach_row + 1, len(headers2))
+
+        # 鎸変細鍛樼粺璁?
+        member_row = 23
+        ws.cell(row=member_row, column=1, value="涓夈€佹寜浼氬憳缁熻")
+        ws.cell(row=member_row, column=1).font = self._subtitle_font()
+        headers3 = [
+            "浼氬憳缂栧彿", "濮撳悕", "鏈湀涓婅娆℃暟", "鏈湀娑堣€楄鏃?,
+            "甯哥粌璇剧▼", "鏈€杩戜笂璇炬棩鏈?, "鏈湀璇勪环鍧囧垎",
+        ]
+        for i, h in enumerate(headers3, 1):
+            ws.cell(row=member_row + 1, column=i, value=h)
+        self.engine.apply_header_style(SHEETS["stat_class"], member_row + 1, len(headers3))
+
+        self._set_col_widths(ws, "stat_class",
+                             {1: 14, 2: 12, 3: 14, 4: 14,
+                              5: 14, 6: 14, 7: 14, 8: 14, 9: 14})
+
+    def _init_stat_commission(self):
+        """      """
+        """      """
+        ws = self.engine.get_sheet(SHEETS["lesson_package"])
+        ws.cell(row=1, column=1, value="璇剧▼鍖呯鐞?)
+        ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=12)
+        ws.cell(row=1, column=1).font = self._title_font()
+
+        headers = HEADERS.get("lesson_package", [])
+        for i, h in enumerate(headers, 1):
+            ws.cell(row=3, column=i, value=h)
+        if headers:
+            self.engine.apply_header_style(SHEETS["lesson_package"], 3, len(headers))
+        self.engine.set_column_widths(SHEETS["lesson_package"], {
+            "A": 16, "B": 16, "C": 12, "D": 10, "E": 10,
+            "F": 14, "G": 8, "H": 10, "I": 8, "J": 12,
+            "K": 12, "L": 8,
+        })
+        # 鐘舵€佷笅鎷?
+        self.engine.add_dropdown(SHEETS["lesson_package"], f"L4:L1000", PACKAGE_STATUSES)
+
+    def _init_body_measurement(self):
+        """浣撴祴璁板綍"""
+        ws = self.engine.get_sheet(SHEETS["body_measurement"])
+        ws.cell(row=1, column=1, value="浣撴祴璁板綍")
+        ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=12)
+        ws.cell(row=1, column=1).font = self._title_font()
+
+        headers = HEADERS.get("body_measurement", [])
+        for i, h in enumerate(headers, 1):
+            ws.cell(row=3, column=i, value=h)
+        if headers:
+            self.engine.apply_header_style(SHEETS["body_measurement"], 3, len(headers))
+        self.engine.set_column_widths(SHEETS["body_measurement"], {
+            "A": 16, "B": 12, "C": 10, "D": 12, "E": 8,
+            "F": 8, "G": 8, "H": 6, "I": 8, "J": 10,
+            "K": 6, "L": 20,
+        })
+
+    def _init_log(self):
+        """鎿嶄綔鏃 織"""
+        ws = self.engine.get_sheet(SHEETS["log"])
+        self._write_title(ws, "馃摑 鎿嶄綔鏃ュ織")
+        self._write_headers(ws, "log")
+        self._add_dropdowns(ws, "log", {
+            4: OP_TYPES,            # 鎿嶄綔绫诲瀷
+            5: OP_MODULES,          # 鎿嶄綔妯″潡
+        })
+        self.engine.apply_header_style(SHEETS["log"], DATA_START_ROW - 1,
+                                       len(HEADERS["log"]))
+        self._set_col_widths(ws, "log",
+                             {1: 18, 2: 20, 3: 10, 4: 10,
+                              5: 10, 6: 40, 7: 30, 8: 30})
+
+    # ==================== 绀轰緥鏁版嵁 ====================
+
+    def _add_sample_data(self):
+        """娣诲姞绀轰緥鏁版嵁"""
+        self._add_sample_courses()
+        self._add_sample_staff()
+        self._add_sample_members()
+        self._add_sample_sales()
+        self._add_sample_class_records()
+        print("  鉁?绀轰緥鏁版嵁宸叉坊鍔?)
+
+    def _add_sample_courses(self):
+        """娣诲姞绀轰緥璇剧 """
+        ws = self.engine.get_sheet(SHEETS["course"])
+        courses = [
+            ["C001", "1瀵?绉佹暀璇?, "鍔涢噺璁粌", "1瀵?绉佹暀", 60, 1, 300, 200, 180, 1, "鍏ㄩ儴", "鍚?, 0, "涓撲笟绉佹暀涓€瀵逛竴鎸囧", "涓婃灦"],
+            ["C002", "鐟滀冀灏忕彮璇?, "鐟滀冀", "灏忕彮璇?3-8浜?", 60, 0.5, 150, 100, 90, 8, "鍏ㄩ儴", "鏄?, 0.5, "涓撲笟鐟滀冀鎸囧", "涓婃灦"],
+            ["C003", "鏅媺鎻愬櫒姊拌", "鏅媺鎻?, "1瀵?绉佹暀", 60, 1, 350, 250, 180, 1, "閲戝崱,閽荤煶", "鍚?, 0, "鏅媺鎻愭牳蹇冨簥璁粌", "涓婃灦"],
+            ["C004", "娓告吵绉佹暀璇?, "娓告吵", "1瀵?绉佹暀", 60, 1, 400, 300, 180, 1, "鍏ㄩ儴", "鏄?, 0.5, "涓撲笟娓告吵鏁欏", "涓婃灦"],
+            ["C005", "鍔ㄦ劅鍗曡溅鍥㈣", "鍔ㄦ劅鍗曡溅", "鍥㈣", 45, 0.3, 80, 60, 30, 30, "鍏ㄩ儴", "鏄?, 0.3, "鐕冭剛鍔ㄦ劅鍗曡溅", "涓婃灦"],
+            ["C006", "鎷冲嚮绉佹暀璇?, "鎷冲嚮", "1瀵?绉佹暀", 60, 1, 350, 250, 180, 1, "鍏ㄩ儴", "鏄?, 0.5, "鎷冲嚮璁粌", "涓婃灦"],
+            ["C007", "鎷変几搴峰璇?, "鎷変几搴峰", "1瀵?绉佹暀", 60, 1, 280, 200, 180, 1, "鍏ㄩ儴", "鍚?, 0, "杩愬姩鍚庢媺浼稿悍澶?, "涓婃灦"],
+            ["C008", "鏈夋哀鎿嶅ぇ鐝", "鏈夋哀鎿?, "澶х彮璇?9浜?)", 60, 0.5, 100, 80, 90, 20, "鍏ㄩ儴", "鏄?, 0.5, "鐕冭剛鏈夋哀鎿?, "涓婃灦"],
+            ["C009", "浣撴€佺煫姝ｈ", "浣撴€佺煫姝?, "1瀵?绉佹暀", 60, 1, 320, 250, 180, 1, "鍏ㄩ儴", "鍚?, 0, "涓撲笟浣撴€佽瘎浼颁笌鐭", "涓婃灦"],
+            ["C010", "浣撻獙璇?, "鍔涢噺璁粌", "浣撻獙璇?, 30, 0.5, 99, 99, 7, 1, "鍏ㄩ儴", "鏄?, 0.5, "鏂颁汉浣撻獙璇剧▼", "涓婃灦"],
+        ]
+        for i, c in enumerate(courses):
+            row = DATA_START_ROW + i
+            for j, v in enumerate(c):
+                ws.cell(row=row, column=j + 1, value=v)
+
+    def _add_sample_staff(self):
+        """娣诲姞绀轰緥鍛樺伐"""
+        ws = self.engine.get_sheet(SHEETS["staff"])
+        today = date.today()
+        staff = [
+            ["E001", "寮犳暀缁?, "鐢?, "鍋ヨ韩鏁欑粌", date(2020, 3, 1), date(1992, 5, 15), None, "13800138001", "zhang@fit.com", "鍦ㄨ亴", None,
+             "NSCA-CPT, 搴峰璁よ瘉", "绉佹暀璇?鎷変几搴峰",
+             0.08, 0.07, 4000, 0, 0, 0, 0, 0, 0, 0, 0],
+            ["E002", "鏉庢暀缁?, "鐢?, "鐟滀冀鏁欑粌", date(2021, 6, 1), date(1994, 8, 20), None, "13800138002", "li@fit.com", "鍦ㄨ亴", None,
+             "RYT200, 鏅媺鎻愯璇?, "鐟滀冀,鏅媺鎻?,
+             0.07, 0.07, 3500, 0, 0, 0, 0, 0, 0, 0, 0],
+            ["E003", "鐜嬮攢鍞?, "濂?, "閿€鍞【闂?, date(2022, 1, 15), date(1996, 3, 10), None, "13800138003", "wang@fit.com", "鍦ㄨ亴", None,
+             "閿€鍞煿璁瘉涔?, "",
+             0.10, 0, 3000, 0, 0, 0, 0, 0, 0, 0, 0],
+            ["E004", "璧垫暀缁?, "濂?, "娓告吵鏁欑粌", date(2021, 9, 1), date(1993, 11, 5), None, "13800138004", "zhao@fit.com", "鍦ㄨ亴", None,
+             "娓告吵鏁戠敓璇? 娓告吵鏁欑粌璇?, "娓告吵",
+             0.08, 0.07, 3800, 0, 0, 0, 0, 0, 0, 0, 0],
+            ["E005", "鍒樻暀缁?, "鐢?, "鎿嶈鏁欑粌", date(2022, 3, 1), date(1995, 7, 22), None, "13800138005", "liu@fit.com", "鍦ㄨ亴", None,
+             "鏈夋哀鎿嶈璇? 鍗曡溅璁よ瘉", "鍔ㄦ劅鍗曡溅,鏈夋哀鎿?,
+             0.06, 0.06, 3200, 0, 0, 0, 0, 0, 0, 0, 0],
+            ["E006", "闄堝簵闀?, "濂?, "搴楅暱", date(2019, 5, 1), date(1990, 2, 14), None, "13800138006", "chen@fit.com", "鍦ㄨ亴", None,
+             "杩愯惀绠＄悊璇佷功", "",
+             0.05, 0, 6000, 0, 0, 0, 0, 0, 0, 0, 0],
+        ]
+        for i, s in enumerate(staff):
+            row = DATA_START_ROW + i
+            for j, v in enumerate(s):
+                ws.cell(row=row, column=j + 1, value=v)
+
+    def _add_sample_members(self):
+        """娣诲姞绀轰緥浼氬憳"""
+        ws = self.engine.get_sheet(SHEETS["member"])
+        today = date.today()
+        members = [
+            ["M20260430001", "寮犱笁", "鐢?, "13900139001", date(1990, 3, 15), None, "zhangsan@mail.com",
+             "閲戝崱", date(2025, 10, 1), date(2026, 10, 1), "鏈夋晥",
+             8800, 30, 5, 25, 0, 25, date(2026, 4, 28), 2, 10, "绉佹暀璇?, "鏉庡洓", "", "姝ｅ父", None, ""],
+            ["M20260430002", "鏉庡コ澹?, "濂?, "13900139002", date(1995, 7, 22), None, "lili@mail.com",
+             "閾跺崱", date(2026, 1, 15), date(2026, 7, 15), "鏈夋晥",
+             4500, 20, 3, 17, 0, 17, date(2026, 4, 25), 5, 8, "鐟滀冀", "", "", "姝ｅ父", None, ""],
+            ["M20260430003", "鐜嬩簲", "鐢?, "13900139003", date(1988, 11, 8), None, "wangwu@mail.com",
+             "鏅€?, date(2026, 3, 1), date(2026, 9, 1), "鏈夋晥",
+             3000, 12, 0, 12, 0, 12, None, None, 0, "", "", "", "姝ｅ父", None, ""],
+            ["M20260430004", "璧靛叚", "鐢?, "13900139004", date(2000, 1, 1), None, "zhaoliu@mail.com",
+             "閽荤煶", date(2024, 6, 1), date(2027, 6, 1), "鏈夋晥",
+             20000, 60, 20, 40, 5, 35, date(2026, 4, 20), 10, 20, "绉佹暀璇?, "", "楂樻按骞充細鍛?, "姝ｅ父", None, ""],
+            ["M20260430005", "瀛欎竷", "濂?, "13900139005", date(1992, 5, 20), None, "sunqi@mail.com",
+             "閾跺崱", date(2025, 8, 1), date(2026, 5, 15), "鍗冲皢鍒版湡",
+             3600, 15, 12, 3, 0, 3, date(2026, 3, 15), 46, 12, "鐟滀冀", "", "璇炬椂鍗冲皢鐢ㄥ畬", "闇€鍥炶", None, ""],
+            ["M20260430006", "鍛ㄥ叓", "濂?, "13900139006", date(1985, 12, 10), None, "zhouba@mail.com",
+             "閲戝崱", date(2025, 1, 1), date(2026, 1, 1), "宸插埌鏈?,
+             12000, 48, 45, 3, 0, 3, date(2025, 12, 20), 130, 45, "鏅媺鎻?, "", "闀挎湡鏈画璐?, "娴佸け棰勮", None, ""],
+        ]
+        for i, m in enumerate(members):
+            row = DATA_START_ROW + i
+            for j, v in enumerate(m):
+                ws.cell(row=row, column=j + 1, value=v)
+
+    def _add_sample_sales(self):
+        """娣诲姞绀轰緥鍞璁板綍"""
+        ws = self.engine.get_sheet(SHEETS["sale"])
+        today = date.today()
+        sales = [
+            ["S202604010001", date(2026, 4, 1), "鐜嬮攢鍞?, "M20260430001", "寮犱笁", "閲戝崱",
+             "C001", "1瀵?绉佹暀璇?, "鍔涢噺璁粌", "1瀵?绉佹暀",
+             10, 0, 10, 300, 0.9, 2700, 2700, "寰俊", 0.1, 270, 180, date(2026, 9, 28),
+             25, "鏄?, "INV-20260401", "CT-20260401", "鑰佸缁垂", "鏄ュ娲诲姩", ""],
+            ["S202604010002", date(2026, 4, 1), "鐜嬮攢鍞?, "M20260430002", "鏉庡コ澹?, "閾跺崱",
+             "C002", "鐟滀冀灏忕彮璇?, "鐟滀冀", "灏忕彮璇?3-8浜?",
+             20, 2, 22, 150, 0.95, 2850, 2800, "鏀粯瀹?, 0.1, 280, 90, date(2026, 6, 30),
+             17, "鏄?, "INV-20260402", "CT-20260402", "鏂板鍒板簵", "鏂板浼樻儬", ""],
+            ["S202604150003", date(2026, 4, 15), "鐜嬮攢鍞?, "M20260430003", "鐜嬩簲", "鏅€?,
+             "C010", "浣撻獙璇?, "鍔涢噺璁粌", "浣撻獙璇?,
+             1, 0, 1, 99, 1, 99, 99, "寰俊", 0.1, 9.9, 7, date(2026, 4, 22),
+             12, "鍚?, "", "", "绾夸笂鎺ㄥ箍", "缇庡洟浣撻獙", ""],
+            ["S202603010004", date(2026, 3, 1), "寮犳暀缁?, "M20260430004", "璧靛叚", "閽荤煶",
+             "C003", "鏅媺鎻愬櫒姊拌", "鏅媺鎻?, "1瀵?绉佹暀",
+             20, 5, 25, 350, 0.85, 5950, 5800, "閾惰鍗?, 0.08, 464, 180, date(2026, 8, 28),
+             40, "鏄?, "INV-20260301", "CT-20260301", "杞粙缁?, "", ""],
+            ["S202603150005", date(2026, 3, 15), "鐜嬮攢鍞?, "M20260430005", "瀛欎竷", "閾跺崱",
+             "C002", "鐟滀冀灏忕彮璇?, "鐟滀冀", "灏忕彮璇?3-8浜?",
+             15, 0, 15, 150, 0.9, 2025, 2000, "鍌ㄥ€煎崱鎵ｆ", 0.1, 200, 90, date(2026, 6, 13),
+             3, "鏄?, "INV-20260315", "CT-20260315", "鑰佸缁垂", "", ""],
+        ]
+        for i, s in enumerate(sales):
+            row = DATA_START_ROW + i
+            for j, v in enumerate(s):
+                ws.cell(row=row, column=j + 1, value=v)
+
+    def _add_sample_class_records(self):
+        """娣诲姞绀轰緥涓婅璁板綍"""
+        ws = self.engine.get_sheet(SHEETS["class_record"])
+        records = [
+            ["CL202604010001", date(2026, 4, 1), "09:00", "10:00", "寮犳暀缁?, "", "M20260430001", "寮犱笁",
+             "C001", "1瀵?绉佹暀璇?, "鍔涢噺璁粌", "1瀵?绉佹暀",
+             1, "宸插畬鎴?, date(2026, 3, 30), "", "闈炲父婊℃剰", "寰堝ソ", "浣撻噸75kg,浣撹剛18%", "鑳歌倢璁粌",
+             "鑳岄儴璁粌", 0.07, 70, 0, "S202604010001", ""],
+            ["CL202604010002", date(2026, 4, 1), "10:30", "11:30", "鏉庢暀缁?, "", "M20260430002", "鏉庡コ澹?,
+             "C002", "鐟滀冀灏忕彮璇?, "鐟滀冀", "灏忕彮璇?3-8浜?",
+             1, "宸插畬鎴?, date(2026, 3, 31), "", "婊℃剰", "鏌旈煣鎬ф湁鎻愬崌", "", "娴佺憸浼藉簭鍒?,
+             "闃寸憸浼?, 0.07, 70, 0, "S202604010002", ""],
+            ["CL202604020003", date(2026, 4, 2), "09:00", "10:00", "寮犳暀缁?, "", "M20260430001", "寮犱笁",
+             "C001", "1瀵?绉佹暀璇?, "鍔涢噺璁粌", "1瀵?绉佹暀",
+             1, "宸插畬鎴?, date(2026, 4, 1), "", "闈炲父婊℃剰", "鐘舵€佷笉閿?, "", "鑳岄儴璁粌",
+             "鑵块儴璁粌", 0.07, 70, 0, "S202604010001", ""],
+            ["CL202604030004", date(2026, 4, 3), "08:00", "09:00", "鏉庢暀缁?, "", "M20260430002", "鏉庡コ澹?,
+             "C002", "鐟滀冀灏忕彮璇?, "鐟滀冀", "灏忕彮璇?3-8浜?",
+             1, "宸插畬鎴?, date(2026, 4, 2), "", "婊℃剰", "", "", "闃寸憸浼?,
+             "娴佺憸浼?, 0.07, 70, 0, "S202604010002", ""],
+            ["CL202604200005", date(2026, 4, 20), "14:00", "15:00", "璧垫暀缁?, "", "M20260430004", "璧靛叚",
+             "C003", "鏅媺鎻愬櫒姊拌", "鏅媺鎻?, "1瀵?绉佹暀",
+             1, "宸插畬鎴?, date(2026, 4, 19), "", "闈炲父婊℃剰", "鏍稿績鍔涢噺澧炲己", "浣撻噸72kg", "鏍稿績璁粌",
+             "鍏ㄨ韩鏁村悎璁粌", 0.07, 70, 0, "S202603010004", ""],
+            ["CL202604250006", date(2026, 4, 25), "10:00", "11:00", "鏉庢暀缁?, "", "M20260430002", "鏉庡コ澹?,
+             "C002", "鐟滀冀灏忕彮璇?, "鐟滀冀", "灏忕彮璇?3-8浜?",
+             1, "宸插畬鎴?, date(2026, 4, 24), "", "婊℃剰", "杩涙鏄庢樉", "", "娴佺憸浼借繘闃?,
+             "鍐ユ兂鏀炬澗", 0.07, 70, 0, "S202604010002", ""],
+            ["CL202604280007", date(2026, 4, 28), "09:00", "10:00", "寮犳暀缁?, "", "M20260430001", "寮犱笁",
+             "C001", "1瀵?绉佹暀璇?, "鍔涢噺璁粌", "1瀵?绉佹暀",
+             1, "宸插畬鎴?, date(2026, 4, 27), "", "闈炲父婊℃剰", "璁粌鏁堟灉鏄捐憲", "", "鑵块儴璁粌",
+             "鑲╅儴璁粌", 0.07, 70, 0, "S202604010001", ""],
+        ]
+        for i, r in enumerate(records):
+            row = DATA_START_ROW + i
+            for j, v in enumerate(r):
+                ws.cell(row=row, column=j + 1, value=v)
+
+    # ==================== 鍐呴儴宸ュ叿鏂规硶 ====================
+
+    def _write_title(self, ws, title):
+        """鍐欏叆Sheet鏍囬"""
+        ws.cell(row=1, column=1, value=f"{"鍋ヨ韩鎴夸細鍛樼鐞嗙郴缁?} - {title}")
+        ws.cell(row=1, column=1).font = self._title_font()
+        ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=10)
+
+    def _write_headers(self, ws, sheet_key):
+        """鍐欏叆琛  """
+        headers = HEADERS.get(sheet_key, [])
+        for i, h in enumerate(headers):
+            ws.cell(row=DATA_START_ROW - 1, column=i + 1, value=h)
+
+    def _add_dropdowns(self, ws, sheet_key, col_options):
+        """娣诲姞涓嬫媺鍒楄〃"""
+        headers = HEADERS.get(sheet_key, [])
+        max_col = len(headers)
+        max_row = 1000  # 鐣欏嚭瓒冲琛屾暟
+
+        for col, options in col_options.items():
+            if col > max_col:
+                continue
+            col_letter = chr(64 + col) if col <= 26 else "A"
+            cell_range = f"{col_letter}{DATA_START_ROW}:{col_letter}{max_row}"
+            # 娉ㄦ剰锛歴heet_key鏄唴閮ㄩ敭鍚嶏紝闇€瑕佽浆涓哄搴旂殑涓枃Sheet鍚?
+        actual_sheet_name = ws.title
+        self.engine.add_dropdown(actual_sheet_name, cell_range, options)
+
+    def _set_col_widths(self, ws, sheet_key, widths):
+        """璁剧疆鍒楀"""
+        for col, width in widths.items():
+            col_letter = chr(64 + col) if col <= 26 else "A"
+            ws.column_dimensions[col_letter].width = width
+
+    def _title_font(self):
+        from openpyxl.styles import Font
+        return Font(name="寰蒋闆呴粦", bold=True, size=14, color="1F4E79")
+
+    def _subtitle_font(self):
+        from openpyxl.styles import Font
+        return Font(name="寰蒋闆呴粦", bold=True, size=12, color="2E75B6")
+
+    def _label_font(self):
+        from openpyxl.styles import Font
+        return Font(name="寰蒋闆呴粦", bold=True, size=10, color="333333")
+
+    def _link_font(self):
+        from openpyxl.styles import Font
+        return Font(name="寰蒋闆呴粦", bold=True, size=10, color="0563C1", underline="single")
+
+    def _header_font(self):
+        from openpyxl.styles import Font
+        return Font(name="寰蒋闆呴粦", bold=True, size=10, color="FFFFFF")
+
+
+def main():

@@ -1,0 +1,17 @@
+{
+  "project": "鼠小弟的健身系统",
+  "version": "2.16.2",
+  "backup_time": "2026-05-08 18:06:07",
+  "comment": "V2.16.2 完整版（手环注册保存修复）",
+  "files_count": 8,
+  "items": [
+    "config.py",
+    "main.py",
+    "core",
+    "gui",
+    "api",
+    "docs",
+    "scripts",
+    "data"
+  ]
+}
