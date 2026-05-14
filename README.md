@@ -5,15 +5,19 @@ README.md
 
 基于Excel的健身房会员管理系统，通过Python GUI启动器增强功能。
 功能特点
+
 全功能Excel工作簿：12个Sheet页，完整覆盖健身房业务
 
 Python GUI启动器：一键操作，无需记忆Excel公式
+
 自动化流程：编号生成、数据校验、公式填充、提醒检测
+
 操作日志：所有数据变更自动记录，可审计追溯
 
 一键报表：自动生成统计报表和图表
 
 项目结构
+
 gym-excel-system/
 ├── main.py                    # 启动器主入口
 ├── config.py                  # 全局配置
@@ -32,10 +36,17 @@ gym-excel-system/
 └── requirements.txt           # 依赖
 
 技术栈
+
 Python 3.12+
+
 openpyxl (Excel读写)
+
 tkinter (GUI)
+
 matplotlib (图表)
+
 使用说明
+
 安装依赖：pip install -r requirements.txt
+
 运行主程序：python main.py
